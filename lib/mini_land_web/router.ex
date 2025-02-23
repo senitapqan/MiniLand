@@ -5,8 +5,15 @@ defmodule MiniLandWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", MiniLandWeb do
-    pipe_through :api
+  pipeline :authenticate do
+    plug AppWeb.Plugs.Authenticate
+  end
+
+  scope "/auth" do
+    pipe_through [:api]
+
+    post "/sign_in", AppWeb.AuthController, :sign_in
+    post "/sign_up", AppWeb.AuthController, :sign_up
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

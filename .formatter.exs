@@ -1,5 +1,13 @@
 [
+  line_length: 120,
   import_deps: [:ecto, :ecto_sql, :phoenix],
   subdirectories: ["priv/*/migrations"],
-  inputs: ["*.{ex,exs}", "{config,lib,test}/**/*.{ex,exs}", "priv/*/seeds.exs"]
+  plugins: [Recode.FormatterPlugin],
+  inputs: [
+    "*.{ex,exs}",
+    "playground/**/*.{ex,exs}",
+    "{config,lib,test}/**/*.{ex,exs}",
+    "priv/*/seeds.exs",
+    ".scratchpad/**/*.{ex,exs}"
+  ]
 ]
