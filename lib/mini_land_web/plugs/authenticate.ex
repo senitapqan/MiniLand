@@ -1,5 +1,6 @@
 defmodule AppWeb.Plugs.Authenticate do
   import Plug.Conn
+
   def init(opts) do
     opts
   end
@@ -7,11 +8,10 @@ defmodule AppWeb.Plugs.Authenticate do
   def call(conn, _opts) do
     conn
     |> get_auth_token()
-    |> App.Auth.verify_token()
+    |> MiniLand.Auth.verify_token()
     |> case do
       {:ok, user_id} ->
-        conn
-        |> assign(:user_id, user_id)
+        assign(conn, :user_id, user_id)
 
       false ->
         conn

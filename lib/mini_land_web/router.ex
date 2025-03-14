@@ -12,8 +12,22 @@ defmodule MiniLandWeb.Router do
   scope "/auth" do
     pipe_through [:api]
 
-    post "/sign_in", AppWeb.AuthController, :sign_in
-    post "/sign_up", AppWeb.AuthController, :sign_up
+    post "/sign_in", MiniLandWeb.AuthController, :sign_in
+    post "/sign_up", MiniLandWeb.AuthController, :sign_up
+  end
+
+  scope "/manager" do
+    pipe_through [:api, :authenticate]
+
+    get "/orders", MiniLandWeb.OrderController, :get_orders
+    get "/order/:id", MiniLandWeb.OrderController, :get_order
+    post "/order", MiniLandWeb.OrderController, :create_order
+    post "/order/finish/:id", MiniLandWeb.OrderController, :finish_order
+
+    post "/certificate", MiniLandWeb.CertificateController, :create_certificate
+    post "/certificate/use", MiniLandWeb.CertificateController, :use_certificate
+    get "/certificate", MiniLandWeb.CertificateController, :get_certificates
+    get "/certificate/search", MiniLandWeb.CertificateController, :search_certificate
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

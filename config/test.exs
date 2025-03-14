@@ -7,7 +7,6 @@ import Config
 # Run `mix help test` for more information.
 config :mini_land, MiniLand.Repo,
   username: "postgres",
-  password: "postgres",
   hostname: "localhost",
   database: "mini_land_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
@@ -31,3 +30,5 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+import_config "test.secret.exs"

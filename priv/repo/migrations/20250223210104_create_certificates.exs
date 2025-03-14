@@ -10,7 +10,7 @@ defmodule MiniLand.Repo.Migrations.CreateCertificates do
       add :status, :string, null: false
       add :cost, :integer, null: false
 
-      add :promotion_id, references(:promotions, on_delete: :nilify_all), null: false
+      add :promotion_id, references(:promotions, on_delete: :delete_all), null: false
 
       timestamps()
     end
