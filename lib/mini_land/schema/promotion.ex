@@ -4,8 +4,10 @@ defmodule MiniLand.Schema.Promotion do
   schema "promotions" do
     field :name, :string
     field :cost, :integer
-    field :duration, :integer
-    field :status, :string
+    field :duration, :integer #minutes
+    field :penalty, :integer #tenge per 30 minutes
+
+    field :status, :string, default: "active"
 
     timestamps()
   end

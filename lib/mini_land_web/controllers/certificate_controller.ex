@@ -67,4 +67,16 @@ defmodule MiniLandWeb.CertificateController do
     certificate = Certificates.search_certificate(phone)
     json(conn, certificate)
   end
+
+  def delete_certificate(conn, _params) do
+    certificate_id = conn.params["id"]
+
+    case Certificates.delete_certificate(certificate_id) do
+      :ok ->
+        json(conn, %{message: "Certificate disabled"})
+
+      {:error, error} ->
+        json(conn, %{error: error})
+    end
+  end
 end

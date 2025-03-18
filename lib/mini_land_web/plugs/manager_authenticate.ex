@@ -1,4 +1,4 @@
-defmodule AppWeb.Plugs.Authenticate do
+defmodule AppWeb.Plugs.ManagerAuthenticate do
   import Plug.Conn
 
   def init(opts) do
@@ -10,7 +10,7 @@ defmodule AppWeb.Plugs.Authenticate do
     |> get_auth_token()
     |> MiniLand.Auth.verify_token()
     |> case do
-      {:ok, user_id} ->
+      {:ok, user_id, "manager"} ->
         assign(conn, :user_id, user_id)
 
       false ->

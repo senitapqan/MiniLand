@@ -13,6 +13,8 @@ defmodule MiniLand.Parser.OrderParser do
       child_age: order.child_age,
       parent_full_name: order.parent_full_name,
       parent_phone: order.parent_phone,
+      order_date: DateTime.to_date(order.inserted_at),
+      order_time: DateTime.to_time(order.inserted_at),
       status: order.status
     }
   end

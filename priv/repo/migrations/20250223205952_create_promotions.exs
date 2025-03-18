@@ -6,6 +6,7 @@ defmodule MiniLand.Repo.Migrations.CreatePromotions do
       add :name, :string, null: false
       add :cost, :integer, null: false
       add :duration, :integer, null: false
+      add :penalty, :integer, null: false
 
       add :status, :string, null: false
 

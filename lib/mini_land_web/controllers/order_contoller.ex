@@ -26,13 +26,23 @@ defmodule MiniLandWeb.OrderController do
     end
   end
 
-  def get_orders(conn, %{status: status}) do
-    json(conn, Orders.pull_orders(conn.assigns.user_id, status))
+  def get_orders(conn, _params) do
+    status = conn.params["status"]
+    from = conn.params["from"]
+    to = conn.params["to"]
+
+    from = if from, do: Date.from_iso8601!(from), else: nil
+    to = if to, do: Date.from_iso8601!(to), else: nil
+
+    opts = [status: status, from: from, to: to]
+    json(conn, Orders.pull_orders(conn.assigns.user_id, opts))
   end
 
-  def finish_order(conn, %{order_id: order_id}) do
+  def finish_order(conn, _params) do
+    order_id = conn.params["id"]
+
     case Orders.finish_order(order_id, conn.assigns.user_id) do
-      {:ok, _order} ->
+      :ok ->
         json(conn, %{message: "Order finished"})
 
       {:error, :no_permission} ->
@@ -42,7 +52,9 @@ defmodule MiniLandWeb.OrderController do
     end
   end
 
-  def get_order(conn, %{order_id: order_id}) do
+  def get_order(conn, _params) do
+    order_id = conn.params["id"]
+
     case Orders.pull_order(order_id, conn.assigns.user_id) do
       {:ok, order} ->
         json(conn, order)

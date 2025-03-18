@@ -39,4 +39,18 @@ defmodule MiniLand.Certificates do
   def search_certificate(phone) do
     Repo.get_by(Certificate, buyer_phone: phone)
   end
+
+  def delete_certificate(certificate_id) do
+    certificate = get_certificate!(certificate_id)
+
+    if certificate do
+      certificate
+      |> change(%{status: "inactive"})
+      |> Repo.update()
+
+      :ok
+    else
+      {:error, "Certificate not found"}
+    end
+  end
 end

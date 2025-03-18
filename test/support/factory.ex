@@ -1,4 +1,5 @@
 defmodule MiniLand.Factory do
+  alias MiniLand.Schema.Order
   use ExMachina.Ecto, repo: MiniLand.Repo
 
   alias MiniLand.Auth.User
@@ -19,6 +20,20 @@ defmodule MiniLand.Factory do
     }
   end
 
+  def order_factory do
+    %Order{
+      user: build(:user),
+      child_full_name: sequence(:child_full_name, &"Child Full Name #{&1}"),
+      child_age: 10,
+      parent_full_name: sequence(:parent_full_name, &"Parent Full Name #{&1}"),
+      parent_phone: sequence(:parent_phone, &"Parent Phone #{&1}"),
+      start_time: DateTime.truncate(DateTime.utc_now(), :second),
+      end_time: DateTime.add(DateTime.truncate(DateTime.utc_now(), :second), 30, :second),
+      cost: 100,
+      promotion: build(:promotion)
+    }
+  end
+
   def certificate_factory do
     %Certificate{
       buyer_full_name: sequence(:buyer_full_name, &"Buyer Full Name #{&1}"),
@@ -36,6 +51,7 @@ defmodule MiniLand.Factory do
       name: sequence(:name, &"Promotion #{&1}"),
       cost: 100,
       duration: 30,
+      penalty: 10,
       status: "active"
     }
   end

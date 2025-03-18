@@ -27,7 +27,7 @@ defmodule MiniLand.Auth do
     signer = Joken.Signer.create("HS256", secret_key())
 
     case verify_and_validate(token, signer) do
-      {:ok, claims} -> {:ok, claims["user_id"]}
+      {:ok, claims} -> {:ok, claims["user_id"], claims["role"]}
       {:error, _error} -> false
     end
   end
@@ -37,10 +37,10 @@ defmodule MiniLand.Auth do
 
   defp generate_token(_user, false), do: {:error, :invalid_credentials}
 
-  defp generate_token(%User{id: id}, true) do
+  defp generate_token(%User{id: id, role: role}, true) do
     signer = Joken.Signer.create("HS256", secret_key())
 
-    case generate_and_sign(%{"user_id" => id}, signer) do
+    case generate_and_sign(%{"user_id" => id, "role" => role}, signer) do
       {:ok, token, _claims} ->
         {:ok, token}
 

@@ -1,5 +1,5 @@
 defmodule MiniLandWeb.CertificateTest do
-  use MiniLandWeb.ConnCase
+  use MiniLandWeb.ConnCase, async: true
 
   alias MiniLand.Repo
   alias MiniLand.Schema.Certificate
@@ -73,7 +73,8 @@ defmodule MiniLandWeb.CertificateTest do
             parent_phone: "parent_phone"
           }
         },
-        params, fn
+        params,
+        fn
           _k, v1, v2 when is_map(v1) -> Map.merge(v1, v2)
           _k, _v1, v2 -> v2
         end
@@ -88,13 +89,17 @@ defmodule MiniLandWeb.CertificateTest do
   describe "use certificate" do
     test "uses a certificate", %{token: token, promotion: promotion} do
       certificate = insert(:certificate, %{promotion: promotion})
-      response = use_certificate(
-        token, %{
-          certificate_id: certificate.id,
-          attrs: %{
-            promotion_name: promotion.name
+
+      response =
+        use_certificate(
+          token,
+          %{
+            certificate_id: certificate.id,
+            attrs: %{
+              promotion_name: promotion.name
+            }
           }
-        })
+        )
 
       assert Repo.exists?(Ecto.Query.from(c in Certificate, where: c.status == "used"))
       assert response.status == 200
@@ -102,13 +107,17 @@ defmodule MiniLandWeb.CertificateTest do
 
     test "creates order after using certificate", %{token: token, promotion: promotion} do
       certificate = insert(:certificate, %{promotion: promotion})
-      response = use_certificate(
-        token, %{
-          certificate_id: certificate.id,
-          attrs: %{
-            promotion_name: promotion.name
+
+      response =
+        use_certificate(
+          token,
+          %{
+            certificate_id: certificate.id,
+            attrs: %{
+              promotion_name: promotion.name
+            }
           }
-        })
+        )
 
       assert Repo.exists?(Order)
       assert response.status == 200
@@ -119,7 +128,7 @@ defmodule MiniLandWeb.CertificateTest do
     build_conn()
     |> put_req_header("accept", "application/json")
     |> put_req_header("authorization", "Bearer #{token}")
-    |> get("/manager/certificate")
+    |> get("/manager/certificates")
   end
 
   describe "get certificates" do
