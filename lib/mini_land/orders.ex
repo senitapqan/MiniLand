@@ -23,7 +23,7 @@ defmodule MiniLand.Orders do
     promotion = Promotions.get_promotion_by_name(attrs.promotion_name)
     duration = promotion.duration
 
-    start_time = get_time()
+    start_time = DateTime.truncate(DateTime.utc_now(), :second)
 
     attrs =
       attrs
@@ -94,10 +94,5 @@ defmodule MiniLand.Orders do
     else
       {:error, :no_permission}
     end
-  end
-
-  defp get_time() do
-    {:ok, datetime} = DateTime.now(Application.get_env(:mini_land, :default_time_zone))
-    DateTime.truncate(datetime, :second)
   end
 end

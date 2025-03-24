@@ -7,9 +7,6 @@
 # General application configuration
 import Config
 
-config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
-config :mini_land, default_time_zone: "Asia/Qyzylorda"
-
 config :mini_land,
   ecto_repos: [MiniLand.Repo],
   generators: [timestamp_type: :utc_datetime]
