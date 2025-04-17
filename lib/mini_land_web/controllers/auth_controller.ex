@@ -17,49 +17,33 @@ defmodule MiniLandWeb.AuthController do
 
   def sign_in(conn, unsafe_params) do
     with {:ok, params} <- SignInContract.conform(unsafe_params) do
-      case Auth.sign_in(%{username: params.username, password: params.password}) do
-        {:ok, token} ->
-          json(conn, %{token: token})
-
-        {:error, error} ->
-          conn
-          |> put_status(:unauthorized)
-          |> json(%{error: error})
-      end
+      render_response(
+        conn,
+        Auth.sign_in(%{
+          username: params.username,
+          password: params.password
+        })
+      )
     end
   end
 
   def get_profile(conn, _params) do
-    user_id = conn.params["id"]
-    json(conn, Users.get_profile(user_id))
+    user_id = conn.assigns.user_id
+    render_response(conn, Users.get_profile(user_id))
   end
 
   def get_managers(conn, _params) do
-    json(conn, Users.pull_managers())
+    render_response(conn, Users.pull_managers())
   end
 
   def fire_manager(conn, _params) do
     manager_id = conn.params["id"]
-
-    case Users.fire_manager(manager_id) do
-      :ok ->
-        json(conn, %{message: "Manager fired"})
-
-      {:error, error} ->
-        json(conn, %{error: error})
-    end
+    render_response(conn, Users.fire_manager(manager_id))
   end
 
   def restore_manager(conn, _params) do
     manager_id = conn.params["id"]
-
-    case Users.restore_manager(manager_id) do
-      :ok ->
-        json(conn, %{message: "Manager restored"})
-
-      {:error, error} ->
-        json(conn, %{error: error})
-    end
+    render_response(conn, Users.restore_manager(manager_id))
   end
 
   def get_statistics(conn, _params) do
@@ -68,7 +52,7 @@ defmodule MiniLandWeb.AuthController do
     to = conn.params["to"] || DateTime.utc_now()
 
     opts = [status: status, from: from, to: to]
-    json(conn, Users.get_statistics(opts))
+    render_response(conn, Users.get_statistics(opts))
   end
 
   defmodule CreateManagerContract do
@@ -87,13 +71,39 @@ defmodule MiniLandWeb.AuthController do
 
   def create_manager(conn, unsafe_params) do
     with {:ok, params} <- CreateManagerContract.conform(unsafe_params) do
-      case Auth.sign_up(params) do
-        {:ok, user_id} ->
-          json(conn, %{user_id: user_id})
+      render_response(conn, Auth.sign_up(params))
+    end
+  end
 
-        {:error, error} ->
-          json(conn, %{error: error})
-      end
+  defp render_response(conn, result) do
+    case result do
+      {:ok, result} ->
+        json(conn, %{data: result})
+
+      {:error, :username_already_taken} ->
+        conn
+        |> put_status(409)
+        |> json(%{error: "Username already taken"})
+
+      {:error, :phone_already_taken} ->
+        conn
+        |> put_status(409)
+        |> json(%{error: "Phone already taken"})
+
+      {:error, :invalid_credentials} ->
+        conn
+        |> put_status(401)
+        |> json(%{error: "Invalid credentials"})
+
+      {:error, :inactive_user} ->
+        conn
+        |> put_status(401)
+        |> json(%{error: "Manager was fired"})
+
+      {:error, error} ->
+        conn
+        |> put_status(500)
+        |> json(%{msg: "Some unknown internal server error", error: error})
     end
   end
 end

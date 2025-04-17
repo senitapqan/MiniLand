@@ -1,5 +1,5 @@
 defmodule MiniLand.Promotions do
-  alias MiniLand.Parser.PromotionParser
+  alias MiniLand.Render.PromotionJson
   alias MiniLand.Repo
   alias MiniLand.Schema.Promotion
 
@@ -20,8 +20,11 @@ defmodule MiniLand.Promotions do
   end
 
   def pull_promotions() do
-    Repo.all(Promotion)
-    |> Enum.map(&PromotionParser.parse_promotion/1)
+    promotions =
+      Repo.all(Promotion)
+      |> Enum.map(&PromotionJson.render_promotion/1)
+
+    {:ok, promotions}
   end
 
   def delete_promotion(promotion_id) do
@@ -32,7 +35,7 @@ defmodule MiniLand.Promotions do
       |> change(%{status: "inactive"})
       |> Repo.update()
 
-      :ok
+      {:ok, :deleted}
     else
       {:error, "Promotion not found"}
     end

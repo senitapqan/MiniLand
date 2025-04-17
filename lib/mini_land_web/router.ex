@@ -6,11 +6,11 @@ defmodule MiniLandWeb.Router do
   end
 
   pipeline :manager_authenticate do
-    plug AppWeb.Plugs.ManagerAuthenticate
+    plug MiniLandWeb.Plugs.ManagerAuthenticate
   end
 
   pipeline :admin_authenticate do
-    plug AppWeb.Plugs.AdminAuthenticate
+    plug MiniLandWeb.Plugs.AdminAuthenticate
   end
 
   scope "/auth" do
@@ -18,9 +18,6 @@ defmodule MiniLandWeb.Router do
 
     # test done
     post "/sign_in", MiniLandWeb.AuthController, :sign_in
-
-    # test done
-    post "/sign_up", MiniLandWeb.AuthController, :sign_up
   end
 
   scope "/manager" do
@@ -28,28 +25,18 @@ defmodule MiniLandWeb.Router do
 
     get "/", MiniLandWeb.AuthController, :get_profile
 
-    # test done
     get "/orders", MiniLandWeb.OrderController, :get_orders
-
-    # test done
     get "/order/:id", MiniLandWeb.OrderController, :get_order
-
-    # test done
     post "/order", MiniLandWeb.OrderController, :create_order
-
-    # test done
     post "/order/finish/:id", MiniLandWeb.OrderController, :finish_order
 
-    # test done
     post "/certificate", MiniLandWeb.CertificateController, :create_certificate
-
-    # test done
     post "/certificate/use", MiniLandWeb.CertificateController, :use_certificate
     post "/certificate/delete/:id", MiniLandWeb.CertificateController, :delete_certificate
-
-    # test done
     get "/certificates", MiniLandWeb.CertificateController, :get_certificates
     get "/certificate/search", MiniLandWeb.CertificateController, :search_certificate
+
+    get "/promotions", MiniLandWeb.PromotionController, :get_promotions
   end
 
   scope "/admin" do

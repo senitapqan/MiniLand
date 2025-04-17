@@ -1,8 +1,8 @@
-defmodule MiniLand.Parser.CertificateParser do
+defmodule MiniLand.Render.CertificateJson do
   alias MiniLand.Repo
   alias MiniLand.Schema.Promotion
 
-  def parse_certificate(certificate) do
+  def render_certificate(certificate) do
     promotion = Repo.get!(Promotion, certificate.promotion_id)
 
     %{

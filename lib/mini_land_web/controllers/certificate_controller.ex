@@ -20,11 +20,13 @@ defmodule MiniLandWeb.CertificateController do
 
   def create_certificate(conn, unsafe_params) do
     with {:ok, params} <- CreateCertificateContract.conform(unsafe_params) do
-      certificate = Certificates.create_new_certificate(params)
+      case Certificates.create_new_certificate(params) do
+        {:ok, certificate} ->
+          render_response(conn, {:ok, :created, %{certificate_id: certificate.id}})
 
-      conn
-      |> put_status(:created)
-      |> json(certificate.id)
+        {:error, :promotion_not_found} ->
+          render_response(conn, {:error, :not_found, "Promotion not found"})
+      end
     end
   end
 
@@ -53,19 +55,18 @@ defmodule MiniLandWeb.CertificateController do
 
       {:ok, _certificate} = Certificates.use_certificate!(params.certificate_id)
       order = Orders.create_new_order(attrs)
-
-      json(conn, %{order_id: order.id})
+      render_response(conn, {:ok, %{order_id: order.id}})
     end
   end
 
   def get_certificates(conn, _params) do
     certificates = Certificates.pull_certificates()
-    json(conn, certificates)
+    render_response(conn, {:ok, certificates})
   end
 
   def search_certificate(conn, %{phone: phone}) do
     certificate = Certificates.search_certificate(phone)
-    json(conn, certificate)
+    render_response(conn, {:ok, certificate})
   end
 
   def delete_certificate(conn, _params) do
@@ -73,10 +74,27 @@ defmodule MiniLandWeb.CertificateController do
 
     case Certificates.delete_certificate(certificate_id) do
       :ok ->
-        json(conn, %{message: "Certificate disabled"})
+        render_response(conn, {:ok, %{message: "Certificate disabled"}})
 
       {:error, error} ->
-        json(conn, %{error: error})
+        render_response(conn, {:error, error})
+    end
+  end
+
+  defp render_response(conn, response) do
+    case response do
+      {:ok, data} ->
+        json(conn, {:ok, data})
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(404)
+        |> json(%{msg: "Not found"})
+
+      {:error, error} ->
+        conn
+        |> put_status(500)
+        |> json(%{msg: "Some unknown internal server error", error: error})
     end
   end
 end

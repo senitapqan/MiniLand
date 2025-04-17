@@ -1,8 +1,8 @@
-defmodule MiniLand.Parser.OrderParser do
+defmodule MiniLand.Render.OrderJson do
   alias MiniLand.Repo
   alias MiniLand.Schema.Promotion
 
-  def parse_order(order) do
+  def render_order(order) do
     promotion = Repo.get!(Promotion, order.promotion_id)
 
     %{

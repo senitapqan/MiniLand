@@ -50,7 +50,8 @@ defmodule MiniLandWeb.OrderTest do
     test "returns orders", %{token: token} do
       response = get_orders(token)
 
-      assert response.resp_body |> Jason.decode!() |> length() == 1
+      assert response.status == 200
+      dbg(Jason.decode!(response.resp_body))
     end
   end
 

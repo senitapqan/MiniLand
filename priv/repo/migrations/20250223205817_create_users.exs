@@ -15,5 +15,8 @@ defmodule MiniLand.Repo.Migrations.CreateUsers do
 
       timestamps()
     end
+
+    create unique_index(:users, [:username], name: :users_username_index)
+    create unique_index(:users, [:phone], name: :users_phone_index)
   end
 end

@@ -1,5 +1,6 @@
-defmodule AppWeb.Plugs.AdminAuthenticate do
+defmodule MiniLandWeb.Plugs.AdminAuthenticate do
   import Plug.Conn
+  import Phoenix.Controller
 
   def init(opts) do
     opts
@@ -13,9 +14,16 @@ defmodule AppWeb.Plugs.AdminAuthenticate do
       {:ok, user_id, "admin"} ->
         assign(conn, :user_id, user_id)
 
+      {:ok, _user_id, "manager"} ->
+        conn
+        |> put_status(403)
+        |> json(%{error: "Permission denied"})
+        |> halt()
+
       false ->
         conn
         |> put_status(:unauthorized)
+        |> json(%{error: "Unauthorized"})
         |> halt()
     end
   end

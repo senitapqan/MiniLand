@@ -1,5 +1,5 @@
 defmodule MiniLand.Certificates do
-  alias MiniLand.Parser.CertificateParser
+  alias MiniLand.Render.CertificateJson
   alias MiniLand.Promotions
   alias MiniLand.Repo
   alias MiniLand.Schema.Certificate
@@ -18,11 +18,23 @@ defmodule MiniLand.Certificates do
 
   def create_new_certificate(attrs) do
     promotion = Promotions.get_promotion_by_name(attrs.promotion_name)
-    attrs = Map.put(attrs, :promotion_id, promotion.id)
-    attrs = Map.put(attrs, :cost, promotion.cost)
-    attrs = Map.delete(attrs, :promotion_name)
+    if promotion do
+      certificate =
+        %{
+          buyer_full_name: attrs.buyer_full_name,
+          buyer_phone: attrs.buyer_phone,
+          receiver_full_name: attrs.receiver_full_name,
+          receiver_phone: attrs.receiver_phone,
+          cost: promotion.cost,
+          promotion_id: promotion.id
+        }
+        |> create_certificate!()
 
-    create_certificate!(attrs)
+      {:ok, certificate}
+
+    else
+      {:error, :promotion_not_found}
+    end
   end
 
   def use_certificate!(certificate_id) do
@@ -33,7 +45,7 @@ defmodule MiniLand.Certificates do
 
   def pull_certificates do
     Repo.all(Certificate)
-    |> Enum.map(&CertificateParser.parse_certificate/1)
+    |> Enum.map(&CertificateJson.render_certificate/1)
   end
 
   def search_certificate(phone) do

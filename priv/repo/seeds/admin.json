@@ -1,0 +1,11 @@
+{   
+    "full_name": "Admin",
+    "phone": "+87086815386",
+    "photo_url": "https://example.com/photo.jpg",
+
+    "username": "admin@admin.com",
+    "password": "adminadmin",
+
+    "role": "admin",
+    "status": "active"
+}

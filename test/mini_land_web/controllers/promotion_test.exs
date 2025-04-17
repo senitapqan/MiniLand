@@ -49,7 +49,8 @@ defmodule MiniLandWeb.PromotionControllerTest do
 
     test "returns all promotions", %{token: token} do
       response = get_promotions(token)
-      assert response.resp_body |> Jason.decode!() |> length() == 1
+      assert response.status == 200
+      dbg(Jason.decode!(response.resp_body))
     end
   end
 

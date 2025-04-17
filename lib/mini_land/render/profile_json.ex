@@ -1,5 +1,5 @@
-defmodule MiniLand.Parser.ProfileParser do
-  def parse_profile(user) do
+defmodule MiniLand.Render.ProfileJson do
+  def render_profile(user) do
     %{
       id: user.id,
       full_name: user.full_name,
@@ -9,14 +9,6 @@ defmodule MiniLand.Parser.ProfileParser do
       status: user.status,
       hired_date: DateTime.to_date(user.inserted_at),
       fired_date: get_fired_date(user)
-    }
-  end
-
-  def get_statistics(user, orders) do
-    %{
-      total_orders: length(orders),
-      total_orders_cost: Enum.reduce(orders, 0, fn order, acc -> acc + order.cost end),
-      full_name: user.full_name,
     }
   end
 

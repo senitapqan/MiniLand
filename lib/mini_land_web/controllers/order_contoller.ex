@@ -20,9 +20,7 @@ defmodule MiniLandWeb.OrderController do
   def create_order(conn, params) do
     with {:ok, params} <- CreateOrderContract.conform(params) do
       params = Map.put(params, :user_id, conn.assigns.user_id)
-      order = Orders.create_new_order(params)
-
-      json(conn, %{order_id: order.id})
+      render_response(conn, Orders.create_new_order(params))
     end
   end
 
@@ -35,34 +33,34 @@ defmodule MiniLandWeb.OrderController do
     to = if to, do: Date.from_iso8601!(to), else: nil
 
     opts = [status: status, from: from, to: to]
-    json(conn, Orders.pull_orders(conn.assigns.user_id, opts))
+    render_response(conn, Orders.pull_orders(conn.assigns.user_id, opts))
   end
 
   def finish_order(conn, _params) do
     order_id = conn.params["id"]
-
-    case Orders.finish_order(order_id, conn.assigns.user_id) do
-      :ok ->
-        json(conn, %{message: "Order finished"})
-
-      {:error, :no_permission} ->
-        conn
-        |> put_status(:forbidden)
-        |> json(%{error: "You have no permission to finish this order"})
-    end
+    render_response(conn, Orders.finish_order(order_id, conn.assigns.user_id))
   end
 
   def get_order(conn, _params) do
     order_id = conn.params["id"]
 
-    case Orders.pull_order(order_id, conn.assigns.user_id) do
-      {:ok, order} ->
-        json(conn, order)
+    render_response(conn, Orders.pull_order(order_id, conn.assigns.user_id))
+  end
+
+  defp render_response(conn, response) do
+    case response do
+      {:ok, data} ->
+        json(conn, %{data: data})
 
       {:error, :no_permission} ->
         conn
         |> put_status(:forbidden)
         |> json(%{error: "You have no permission to access this order"})
+
+      {:error, error} ->
+        conn
+        |> put_status(500)
+        |> json(%{msg: "Some unknown internal server error", error: error})
     end
   end
 end

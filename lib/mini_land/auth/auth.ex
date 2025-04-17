@@ -16,6 +16,12 @@ defmodule MiniLand.Auth do
       {:ok, user} ->
         {:ok, user.id}
 
+      {:error, %Ecto.Changeset{errors: [username: {"has already been taken", _}]}} ->
+        {:error, :username_already_taken}
+
+      {:error, %Ecto.Changeset{errors: [phone: {"has already been taken", _}]}} ->
+        {:error, :phone_already_taken}
+
       {:error, error} ->
         {:error, error}
     end
@@ -33,6 +39,7 @@ defmodule MiniLand.Auth do
   end
 
   defp validate_user(nil, _password), do: {:error, :invalid_credentials}
+  defp validate_user(%User{status: "inactive"}, _password), do: {:error, :inactive_user}
   defp validate_user(user, password), do: generate_token(user, Bcrypt.verify_pass(password, user.password))
 
   defp generate_token(_user, false), do: {:error, :invalid_credentials}

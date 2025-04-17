@@ -25,7 +25,6 @@ defmodule MiniLandWeb.Endpoint do
     gzip: false,
     only: MiniLandWeb.static_paths()
 
-
   plug CORSPlug, origin: "*"
 
   # Code reloading can be explicitly enabled under the

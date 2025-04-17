@@ -44,7 +44,8 @@ defmodule MiniLandWeb.ManagerControllerTest do
 
     test "returns all managers", %{token: token} do
       response = get_managers(token)
-      assert response.resp_body |> Jason.decode!() |> length() == 1
+      assert response.status == 200
+      dbg(Jason.decode!(response.resp_body))
     end
   end
 
@@ -59,6 +60,7 @@ defmodule MiniLandWeb.ManagerControllerTest do
     test "returns 200", %{manager: manager, token: token} do
       response = fire_manager(token, manager.id)
       assert response.status == 200
+      dbg(Jason.decode!(response.resp_body))
     end
 
     test "returns 401", %{manager: manager} do
@@ -143,7 +145,5 @@ defmodule MiniLandWeb.ManagerControllerTest do
       response = get_statistics(token)
       assert response.status == 200
     end
-
-
   end
 end

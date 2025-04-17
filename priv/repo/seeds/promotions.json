@@ -1,0 +1,16 @@
+[
+    {
+        "name": "2+1",
+        "cost": 10000,
+        "duration": 180,
+        "penalty": 3000,
+        "status": "active"
+    },
+    {
+        "name": "1+1",
+        "cost": 7000,
+        "duration": 120,
+        "penalty": 2000,
+        "status": "active"
+    }
+]

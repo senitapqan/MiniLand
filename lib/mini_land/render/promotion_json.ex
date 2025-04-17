@@ -1,5 +1,5 @@
-defmodule MiniLand.Parser.PromotionParser do
-  def parse_promotion(promotion) do
+defmodule MiniLand.Render.PromotionJson do
+  def render_promotion(promotion) do
     %{
       id: promotion.id,
       name: promotion.name,

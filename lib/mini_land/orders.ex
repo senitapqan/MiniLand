@@ -1,6 +1,6 @@
 defmodule MiniLand.Orders do
+  alias MiniLand.Render.OrderJson
   alias MiniLand.Auth.User
-  alias MiniLand.Parser.OrderParser
   alias MiniLand.Promotions
   alias MiniLand.Repo
   alias MiniLand.Schema.Order
@@ -9,10 +9,10 @@ defmodule MiniLand.Orders do
   require Ecto.Query
   import Ecto.Changeset
 
-  def create_order!(attrs) do
+  def create_order(attrs) do
     %Order{}
     |> change(attrs)
-    |> Repo.insert!()
+    |> Repo.insert()
   end
 
   def get_order!(id) do
@@ -25,23 +25,26 @@ defmodule MiniLand.Orders do
 
     start_time = DateTime.truncate(DateTime.utc_now(), :second)
 
-    attrs =
-      attrs
-      |> Map.put(:start_time, start_time)
-      |> Map.put(:end_time, DateTime.add(start_time, duration, :minute))
-      |> Map.put(:promotion_id, promotion.id)
-      |> Map.put(:cost, promotion.cost)
-      |> Map.delete(:promotion_name)
-
-    create_order!(attrs)
+    %{
+      start_time: start_time,
+      end_time: DateTime.add(start_time, duration, :minute),
+      promotion_id: promotion.id,
+      cost: promotion.cost,
+      penalty: attrs.penalty,
+      duration: attrs.duration
+    }
+    |> create_order()
   end
 
   def pull_orders(user_id, opts \\ []) do
     user = Users.get_user!(user_id)
 
-    pull_orders_query(user, opts)
-    |> Repo.all()
-    |> Enum.map(&OrderParser.parse_order/1)
+    orders =
+      pull_orders_query(user, opts)
+      |> Repo.all()
+      |> Enum.map(&OrderJson.render_order/1)
+
+    {:ok, orders}
   end
 
   defp pull_orders_query(user, opts) do
@@ -58,7 +61,9 @@ defmodule MiniLand.Orders do
 
   defp maybe_admin_query(query, nil), do: query
   defp maybe_admin_query(query, %User{role: "admin"}), do: query
-  defp maybe_admin_query(query, %User{role: "manager", id: user_id}), do: Ecto.Query.where(query, [o], o.user_id == ^user_id)
+
+  defp maybe_admin_query(query, %User{role: "manager", id: user_id}),
+    do: Ecto.Query.where(query, [o], o.user_id == ^user_id)
 
   defp maybe_add_status(query, nil), do: query
   defp maybe_add_status(query, status), do: Ecto.Query.where(query, [o], o.status == ^status)
@@ -67,7 +72,6 @@ defmodule MiniLand.Orders do
   defp maybe_add_from(query, from), do: Ecto.Query.where(query, [o], o.inserted_at >= ^from)
   defp maybe_add_to(query, nil), do: query
   defp maybe_add_to(query, to), do: Ecto.Query.where(query, [o], o.inserted_at <= ^to)
-
 
   def finish_order(order_id, user_id) do
     user = Users.get_user!(user_id)
@@ -78,7 +82,7 @@ defmodule MiniLand.Orders do
       |> change(%{status: "finished"})
       |> Repo.update()
 
-      :ok
+      {:ok, :finished}
     else
       {:error, :no_permission}
     end
@@ -89,7 +93,7 @@ defmodule MiniLand.Orders do
     order = get_order!(order_id)
 
     if user.role == "admin" or order.user_id == user_id do
-      order = OrderParser.parse_order(order)
+      order = OrderJson.render_order(order)
       {:ok, order}
     else
       {:error, :no_permission}

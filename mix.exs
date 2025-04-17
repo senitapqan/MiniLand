@@ -19,7 +19,7 @@ defmodule MiniLand.MixProject do
   def application do
     [
       mod: {MiniLand.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :plug_cowboy]
     ]
   end
 
@@ -32,6 +32,7 @@ defmodule MiniLand.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:plug_cowboy, "~> 2.5"},
       {:cors_plug, "~> 3.0"},
       {:phoenix, "~> 1.7.19"},
       {:phoenix_ecto, "~> 4.5"},

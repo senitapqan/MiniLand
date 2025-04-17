@@ -20,7 +20,7 @@ erl_crash.dump
 *.ez
 
 
-# .env
+.env
 /config/dev.secret.exs
 /config/test.secret.exs
 
