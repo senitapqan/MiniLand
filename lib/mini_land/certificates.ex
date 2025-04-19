@@ -1,10 +1,11 @@
 defmodule MiniLand.Certificates do
-  alias MiniLand.Render.CertificateJson
   alias MiniLand.Promotions
+  alias MiniLand.Render.CertificateJson
   alias MiniLand.Repo
   alias MiniLand.Schema.Certificate
 
   import Ecto.Changeset
+  import Ecto.Query
 
   def get_certificate!(certificate_id) do
     Repo.get!(Certificate, certificate_id)
@@ -18,20 +19,19 @@ defmodule MiniLand.Certificates do
 
   def create_new_certificate(attrs) do
     promotion = Promotions.get_promotion_by_name(attrs.promotion_name)
+
     if promotion do
       certificate =
-        %{
+        create_certificate!(%{
           buyer_full_name: attrs.buyer_full_name,
           buyer_phone: attrs.buyer_phone,
           receiver_full_name: attrs.receiver_full_name,
           receiver_phone: attrs.receiver_phone,
           cost: promotion.cost,
           promotion_id: promotion.id
-        }
-        |> create_certificate!()
+        })
 
-      {:ok, certificate}
-
+      {:ok, CertificateJson.render_certificate(certificate)}
     else
       {:error, :promotion_not_found}
     end
@@ -49,7 +49,19 @@ defmodule MiniLand.Certificates do
   end
 
   def search_certificate(phone) do
-    Repo.get_by(Certificate, buyer_phone: phone)
+    certificates_by_receiver_phone =
+      Certificate
+      |> where([c], c.receiver_phone == ^phone)
+      |> Repo.all()
+      |> Enum.map(&CertificateJson.render_certificate/1)
+
+    certificates_by_buyer_phone =
+      Certificate
+      |> where([c], c.buyer_phone == ^phone)
+      |> Repo.all()
+      |> Enum.map(&CertificateJson.render_certificate/1)
+
+    {:ok, %{receiver: certificates_by_receiver_phone, buyer: certificates_by_buyer_phone}}
   end
 
   def delete_certificate(certificate_id) do
@@ -60,9 +72,9 @@ defmodule MiniLand.Certificates do
       |> change(%{status: "inactive"})
       |> Repo.update()
 
-      :ok
+      {:ok, :deleted}
     else
-      {:error, "Certificate not found"}
+      {:error, :not_found}
     end
   end
 end

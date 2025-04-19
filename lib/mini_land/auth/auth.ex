@@ -49,7 +49,7 @@ defmodule MiniLand.Auth do
 
     case generate_and_sign(%{"user_id" => id, "role" => role}, signer) do
       {:ok, token, _claims} ->
-        {:ok, token}
+        {:ok, %{token: token}}
 
       {:error, error} ->
         {:error, error}

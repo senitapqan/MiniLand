@@ -84,19 +84,19 @@ defmodule MiniLand.Users do
       Enum.map(managers, fn manager ->
         {:ok, orders} = Orders.pull_orders(manager.id, opts)
 
-      total_earnings =
-        Enum.reduce(orders, 0, fn order, acc ->
-          acc + order.cost
-        end)
+        total_earnings =
+          Enum.reduce(orders, 0, fn order, acc ->
+            acc + order.cost
+          end)
 
-      %{
-        manager: ProfileJson.render_profile(manager),
-        statistics: %{
-          total_earnings: total_earnings,
-          total_orders: length(orders)
+        %{
+          manager: ProfileJson.render_profile(manager),
+          statistics: %{
+            total_earnings: total_earnings,
+            total_orders: length(orders)
+          }
         }
-      }
-    end)
+      end)
 
     {:ok, stats}
   end

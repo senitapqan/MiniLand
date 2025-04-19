@@ -45,12 +45,12 @@ defmodule MiniLand.Seeds do
   defp insert_promotions(promotions) do
     Enum.each(promotions, fn promotion ->
       unless Repo.get_by(Promotion,
-             name: promotion["name"],
-             cost: promotion["cost"],
-             duration: promotion["duration"],
-             penalty: promotion["penalty"],
-             status: promotion["status"]
-           ) do
+               name: promotion["name"],
+               cost: promotion["cost"],
+               duration: promotion["duration"],
+               penalty: promotion["penalty"],
+               status: promotion["status"]
+             ) do
         %Promotion{
           name: promotion["name"],
           cost: promotion["cost"],

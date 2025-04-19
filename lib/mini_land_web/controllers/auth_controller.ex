@@ -47,12 +47,19 @@ defmodule MiniLandWeb.AuthController do
   end
 
   def get_statistics(conn, _params) do
-    status = "active"
-    from = conn.params["from"] || DateTime.add(DateTime.utc_now(), -30, :day)
-    to = conn.params["to"] || DateTime.utc_now()
+    status = "finished"
+    from = format_date(conn.params["from"], DateTime.add(DateTime.utc_now(), -30, :day))
+    to = format_date(conn.params["to"], DateTime.utc_now())
 
     opts = [status: status, from: from, to: to]
     render_response(conn, Users.get_statistics(opts))
+  end
+
+  defp format_date(nil, default), do: default
+
+  defp format_date(date, _) do
+    {:ok, data, _} = DateTime.from_iso8601(date)
+    data
   end
 
   defmodule CreateManagerContract do
@@ -100,10 +107,10 @@ defmodule MiniLandWeb.AuthController do
         |> put_status(401)
         |> json(%{error: "Manager was fired"})
 
-      {:error, error} ->
+      {:error, _error} ->
         conn
         |> put_status(500)
-        |> json(%{msg: "Some unknown internal server error", error: error})
+        |> json(%{msg: "Some unknown internal server error"})
     end
   end
 end

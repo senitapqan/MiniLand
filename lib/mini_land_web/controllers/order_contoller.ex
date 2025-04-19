@@ -26,11 +26,8 @@ defmodule MiniLandWeb.OrderController do
 
   def get_orders(conn, _params) do
     status = conn.params["status"]
-    from = conn.params["from"]
-    to = conn.params["to"]
-
-    from = if from, do: Date.from_iso8601!(from), else: nil
-    to = if to, do: Date.from_iso8601!(to), else: nil
+    from = if conn.params["from"], do: DateTime.from_iso8601(conn.params["from"]), else: nil
+    to = if conn.params["to"], do: DateTime.from_iso8601(conn.params["to"]), else: nil
 
     opts = [status: status, from: from, to: to]
     render_response(conn, Orders.pull_orders(conn.assigns.user_id, opts))
@@ -52,15 +49,20 @@ defmodule MiniLandWeb.OrderController do
       {:ok, data} ->
         json(conn, %{data: data})
 
+      {:error, :not_found} ->
+        conn
+        |> put_status(404)
+        |> json(%{msg: "Order not found"})
+
       {:error, :no_permission} ->
         conn
         |> put_status(:forbidden)
         |> json(%{error: "You have no permission to access this order"})
 
-      {:error, error} ->
+      {:error, _error} ->
         conn
         |> put_status(500)
-        |> json(%{msg: "Some unknown internal server error", error: error})
+        |> json(%{msg: "Some unknown internal server error"})
     end
   end
 end

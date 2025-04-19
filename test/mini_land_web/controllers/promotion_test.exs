@@ -26,7 +26,7 @@ defmodule MiniLandWeb.PromotionControllerTest do
       |> post("/auth/sign_in", params)
 
     {:ok, result} = Jason.decode(response.resp_body)
-    result["token"]
+    result["data"]["token"]
   end
 
   def get_promotions(token) do

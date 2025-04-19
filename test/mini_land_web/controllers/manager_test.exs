@@ -3,6 +3,7 @@ defmodule MiniLandWeb.ManagerControllerTest do
 
   alias MiniLand.Auth.User
   alias MiniLand.Repo
+  alias MiniLand.Schema.Order
 
   import MiniLand.Factory
   require Ecto.Query
@@ -26,7 +27,7 @@ defmodule MiniLandWeb.ManagerControllerTest do
       |> post("/auth/sign_in", params)
 
     {:ok, result} = Jason.decode(response.resp_body)
-    result["token"]
+    result["data"]["token"]
   end
 
   def get_managers(token) do
@@ -133,16 +134,41 @@ defmodule MiniLandWeb.ManagerControllerTest do
     end
   end
 
-  def get_statistics(token) do
+  def get_statistics(token, params \\ %{}) do
     build_conn()
     |> put_req_header("accept", "application/json")
     |> put_req_header("authorization", "Bearer #{token}")
-    |> get("/admin/")
+    |> get("/admin/?#{URI.encode_query(params)}")
   end
 
   describe "get statistics" do
-    test "returns 200", %{token: token} do
-      response = get_statistics(token)
+    test "returns 200", %{token: token, manager: manager} do
+      promotion = insert(:promotion)
+
+      insert(:order,
+        status: "finished",
+        user: manager,
+        start_time: DateTime.add(DateTime.utc_now(), -5, :day),
+        promotion: promotion
+      )
+
+      insert(:order,
+        status: "finished",
+        user: manager,
+        start_time: DateTime.add(DateTime.utc_now(), -7, :day),
+        promotion: promotion
+      )
+
+      res = Repo.all(Ecto.Query.from(o in Order, where: o.user_id == ^manager.id))
+      dbg(res)
+
+      params = %{
+        "from" => DateTime.add(DateTime.utc_now(), -10, :day) |> DateTime.to_iso8601(),
+        "to" => DateTime.to_iso8601(DateTime.utc_now())
+      }
+
+      response = get_statistics(token, params)
+      dbg(Jason.decode!(response.resp_body))
       assert response.status == 200
     end
   end

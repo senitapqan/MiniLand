@@ -12,12 +12,12 @@ defmodule MiniLand.Render.CertificateJson do
       receiver_full_name: certificate.receiver_full_name,
       receiver_phone: certificate.receiver_phone,
       cost: certificate.cost,
-      valid_until: nil,
+      valid_until: valid_until(certificate),
       promotion_name: promotion.name
     }
   end
 
   def valid_until(certificate) do
-    certificate.created_at + 30 * 24 * 60 * 60 * 1000
+    DateTime.add(certificate.inserted_at, 30, :day)
   end
 end

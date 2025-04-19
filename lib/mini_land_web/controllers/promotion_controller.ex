@@ -5,7 +5,7 @@ defmodule MiniLandWeb.PromotionController do
 
   def get_promotions(conn, _params) do
     promotions = Promotions.pull_promotions()
-    render_response(conn, {:ok, promotions})
+    render_response(conn, promotions)
   end
 
   defmodule CreatePromotionContract do
@@ -37,10 +37,15 @@ defmodule MiniLandWeb.PromotionController do
       {:ok, data} ->
         json(conn, %{data: data})
 
-      {:error, error} ->
+      {:error, :not_found} ->
+        conn
+        |> put_status(404)
+        |> json(%{msg: "Promotion not found"})
+
+      {:error, _error} ->
         conn
         |> put_status(500)
-        |> json(%{msg: "Some unknown internal server error", error: error})
+        |> json(%{msg: "Some unknown internal server error"})
     end
   end
 end

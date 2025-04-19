@@ -11,9 +11,10 @@ defmodule MiniLandWeb.CertificateTest do
   setup do
     promotion = insert(:promotion)
     user = insert(:user)
+    certificate = insert(:certificate, %{promotion: promotion})
     token = sign_in(user)
 
-    %{user: user, token: token, promotion: promotion}
+    %{user: user, token: token, promotion: promotion, certificate: certificate}
   end
 
   def sign_in(user) do
@@ -28,7 +29,7 @@ defmodule MiniLandWeb.CertificateTest do
       |> post("/auth/sign_in", params)
 
     {:ok, result} = Jason.decode(response.resp_body)
-    result["token"]
+    result["data"]["token"]
   end
 
   def create_certificate(token, params \\ %{}) do
@@ -55,7 +56,7 @@ defmodule MiniLandWeb.CertificateTest do
       response = create_certificate(token, %{promotion_name: promotion.name})
 
       assert Repo.exists?(Certificate)
-      assert response.status == 201
+      assert response.status == 200
     end
   end
 
@@ -137,6 +138,51 @@ defmodule MiniLandWeb.CertificateTest do
       response = get_certificates(token)
 
       assert response.status == 200
+    end
+  end
+
+  def search_certificate(token, params \\ %{}) do
+    params =
+      Map.merge(
+        %{
+          phone: "+77086815386"
+        },
+        params
+      )
+
+    build_conn()
+    |> put_req_header("accept", "application/json")
+    |> put_req_header("authorization", "Bearer #{token}")
+    |> get("/manager/certificate/search", params)
+  end
+
+  describe "search certificate" do
+    test "returns certificate", %{token: token, certificate: certificate} do
+      phone = certificate.receiver_phone
+      response = search_certificate(token, %{phone: phone})
+      dbg(Jason.decode!(response.resp_body))
+      assert response.status == 200
+    end
+
+    test "returns not found", %{token: token} do
+      response = search_certificate(token, %{phone: "+77086815386"})
+      assert response.status == 200
+      dbg(Jason.decode!(response.resp_body))
+    end
+  end
+
+  def delete_certificate(token, certificate_id) do
+    build_conn()
+    |> put_req_header("accept", "application/json")
+    |> put_req_header("authorization", "Bearer #{token}")
+    |> post("/manager/certificate/delete/#{certificate_id}")
+  end
+
+  describe "delete certificate" do
+    test "returns deleted", %{token: token, certificate: certificate} do
+      response = delete_certificate(token, certificate.id)
+      assert response.status == 200
+      assert Repo.exists?(Ecto.Query.from(c in Certificate, where: c.id == ^certificate.id and c.status == "inactive"))
     end
   end
 end

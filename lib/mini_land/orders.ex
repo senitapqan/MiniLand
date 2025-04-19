@@ -1,12 +1,12 @@
 defmodule MiniLand.Orders do
-  alias MiniLand.Render.OrderJson
   alias MiniLand.Auth.User
   alias MiniLand.Promotions
+  alias MiniLand.Render.OrderJson
   alias MiniLand.Repo
   alias MiniLand.Schema.Order
   alias MiniLand.Users
 
-  require Ecto.Query
+  import Ecto.Query
   import Ecto.Changeset
 
   def create_order(attrs) do
@@ -25,15 +25,25 @@ defmodule MiniLand.Orders do
 
     start_time = DateTime.truncate(DateTime.utc_now(), :second)
 
-    %{
+    create_order(%{
+      child_full_name: attrs.child_full_name,
+      child_age: attrs.child_age,
+      parent_full_name: attrs.parent_full_name,
+      parent_phone: attrs.parent_phone,
+      cost: promotion.cost,
+      penalty: promotion.penalty,
       start_time: start_time,
       end_time: DateTime.add(start_time, duration, :minute),
       promotion_id: promotion.id,
-      cost: promotion.cost,
-      penalty: attrs.penalty,
-      duration: attrs.duration
-    }
-    |> create_order()
+      user_id: attrs.user_id
+    })
+    |> case do
+      {:ok, order} ->
+        {:ok, OrderJson.render_order(order)}
+
+      {:error, _error} ->
+        {:error, :unknown_error}
+    end
   end
 
   def pull_orders(user_id, opts \\ []) do
@@ -48,30 +58,43 @@ defmodule MiniLand.Orders do
   end
 
   defp pull_orders_query(user, opts) do
-    status = Keyword.get(opts, :status, nil)
-    from = Keyword.get(opts, :from, nil)
-    to = Keyword.get(opts, :to, nil)
+    status = Keyword.get(opts, :status)
+    from = Keyword.get(opts, :from)
+    to = Keyword.get(opts, :to)
 
-    Ecto.Query.from(o in Order)
-    |> maybe_admin_query(user)
-    |> maybe_add_status(status)
-    |> maybe_add_from(from)
-    |> maybe_add_to(to)
+    Order
+    |> base_query(user)
+    |> filter_by_status(status)
+    |> filter_by_start_time(from, to)
   end
 
-  defp maybe_admin_query(query, nil), do: query
-  defp maybe_admin_query(query, %User{role: "admin"}), do: query
+  defp base_query(queryable, nil), do: queryable
 
-  defp maybe_admin_query(query, %User{role: "manager", id: user_id}),
-    do: Ecto.Query.where(query, [o], o.user_id == ^user_id)
+  defp base_query(queryable, %User{role: "admin"}), do: queryable
 
-  defp maybe_add_status(query, nil), do: query
-  defp maybe_add_status(query, status), do: Ecto.Query.where(query, [o], o.status == ^status)
+  defp base_query(queryable, %User{role: "manager", id: user_id}) do
+    from o in queryable, where: o.user_id == ^user_id
+  end
 
-  defp maybe_add_from(query, nil), do: query
-  defp maybe_add_from(query, from), do: Ecto.Query.where(query, [o], o.inserted_at >= ^from)
-  defp maybe_add_to(query, nil), do: query
-  defp maybe_add_to(query, to), do: Ecto.Query.where(query, [o], o.inserted_at <= ^to)
+  defp filter_by_status(query, nil), do: query
+
+  defp filter_by_status(query, status) do
+    from o in query, where: o.status == ^status
+  end
+
+  defp filter_by_start_time(query, nil, nil), do: query
+
+  defp filter_by_start_time(query, from, nil) do
+    from o in query, where: o.start_time >= ^from
+  end
+
+  defp filter_by_start_time(query, nil, to) do
+    from o in query, where: o.start_time <= ^to
+  end
+
+  defp filter_by_start_time(query, from, to) do
+    from o in query, where: o.start_time >= ^from and o.start_time <= ^to
+  end
 
   def finish_order(order_id, user_id) do
     user = Users.get_user!(user_id)

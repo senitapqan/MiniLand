@@ -26,7 +26,7 @@ defmodule MiniLandWeb.AuthTest do
 
     test "response 401" do
       response = do_request("sign_in")
-      assert json_response(response, 401) == %{"error" => "invalid_credentials"}
+      assert json_response(response, 401) == %{"error" => "Invalid credentials"}
     end
   end
 end

@@ -18,15 +18,10 @@ defmodule MiniLandWeb.CertificateController do
     end
   end
 
+  # tested
   def create_certificate(conn, unsafe_params) do
     with {:ok, params} <- CreateCertificateContract.conform(unsafe_params) do
-      case Certificates.create_new_certificate(params) do
-        {:ok, certificate} ->
-          render_response(conn, {:ok, :created, %{certificate_id: certificate.id}})
-
-        {:error, :promotion_not_found} ->
-          render_response(conn, {:error, :not_found, "Promotion not found"})
-      end
+      render_response(conn, Certificates.create_new_certificate(params))
     end
   end
 
@@ -48,53 +43,50 @@ defmodule MiniLandWeb.CertificateController do
     end
   end
 
+  # tested
   def use_certificate(conn, unsafe_params) do
     with {:ok, params} <- UseCertificateContract.conform(unsafe_params) do
       user_id = conn.assigns.user_id
       attrs = Map.put(params.attrs, :user_id, user_id)
 
       {:ok, _certificate} = Certificates.use_certificate!(params.certificate_id)
-      order = Orders.create_new_order(attrs)
-      render_response(conn, {:ok, %{order_id: order.id}})
+      render_response(conn, Orders.create_new_order(attrs))
     end
   end
 
+  # tested
   def get_certificates(conn, _params) do
     certificates = Certificates.pull_certificates()
     render_response(conn, {:ok, certificates})
   end
 
-  def search_certificate(conn, %{phone: phone}) do
-    certificate = Certificates.search_certificate(phone)
-    render_response(conn, {:ok, certificate})
+  # tested
+  def search_certificate(conn, %{"phone" => phone}) do
+    render_response(conn, Certificates.search_certificate(phone))
   end
 
+  # tested
   def delete_certificate(conn, _params) do
     certificate_id = conn.params["id"]
-
-    case Certificates.delete_certificate(certificate_id) do
-      :ok ->
-        render_response(conn, {:ok, %{message: "Certificate disabled"}})
-
-      {:error, error} ->
-        render_response(conn, {:error, error})
-    end
+    render_response(conn, Certificates.delete_certificate(certificate_id))
   end
 
   defp render_response(conn, response) do
     case response do
       {:ok, data} ->
-        json(conn, {:ok, data})
+        conn
+        |> put_status(200)
+        |> json(%{data: data})
 
       {:error, :not_found} ->
         conn
         |> put_status(404)
-        |> json(%{msg: "Not found"})
+        |> json(%{msg: "Certificate not found"})
 
-      {:error, error} ->
+      {:error, _error} ->
         conn
         |> put_status(500)
-        |> json(%{msg: "Some unknown internal server error", error: error})
+        |> json(%{msg: "Some unknown internal server error"})
     end
   end
 end

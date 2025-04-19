@@ -17,6 +17,13 @@ defmodule MiniLand.Promotions do
     %Promotion{}
     |> change(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, promotion} ->
+        {:ok, PromotionJson.render_promotion(promotion)}
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   def pull_promotions() do
@@ -37,7 +44,7 @@ defmodule MiniLand.Promotions do
 
       {:ok, :deleted}
     else
-      {:error, "Promotion not found"}
+      {:error, :not_found}
     end
   end
 end
