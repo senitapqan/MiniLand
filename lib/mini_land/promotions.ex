@@ -29,6 +29,7 @@ defmodule MiniLand.Promotions do
   def pull_promotions() do
     promotions =
       Repo.all(Promotion)
+      |> Enum.filter(&(&1.status == "active"))
       |> Enum.map(&PromotionJson.render_promotion/1)
 
     {:ok, promotions}
