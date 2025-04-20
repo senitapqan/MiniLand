@@ -26,8 +26,8 @@ defmodule MiniLandWeb.OrderController do
 
   def get_orders(conn, _params) do
     status = conn.params["status"]
-    from = if conn.params["from"], do: DateTime.from_iso8601(conn.params["from"]), else: nil
-    to = if conn.params["to"], do: DateTime.from_iso8601(conn.params["to"]), else: nil
+    from = format_date(conn.params["from"], nil)
+    to = format_date(conn.params["to"], nil)
 
     opts = [status: status, from: from, to: to]
     render_response(conn, Orders.pull_orders(conn.assigns.user_id, opts))
@@ -42,6 +42,13 @@ defmodule MiniLandWeb.OrderController do
     order_id = conn.params["id"]
 
     render_response(conn, Orders.pull_order(order_id, conn.assigns.user_id))
+  end
+
+  defp format_date(nil, default), do: default
+
+  defp format_date(date, _) do
+    {:ok, data, _} = DateTime.from_iso8601(date)
+    data
   end
 
   defp render_response(conn, response) do
