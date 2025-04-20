@@ -15,6 +15,8 @@ defmodule MiniLand.Render.OrderJson do
       parent_phone: order.parent_phone,
       order_date: DateTime.to_date(order.inserted_at),
       order_time: DateTime.to_time(order.inserted_at),
+      start_time: order.start_time,
+      end_time: order.end_time,
       status: order.status,
       cost: order.cost,
       penalty: order.penalty
