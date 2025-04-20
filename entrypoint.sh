@@ -2,10 +2,10 @@
 set -e
 
 echo "==> Running migrations..."
-bin/seven_easy eval "Ecto.Migrator.with_repo(MiniLand.Repo, &Ecto.Migrator.run(&1, :up, all: true))"
+bin/mini_land eval "Ecto.Migrator.with_repo(MiniLand.Repo, &Ecto.Migrator.run(&1, :up, all: true))"
 
 echo "==> Running seeds..."
-bin/seven_easy eval "Ecto.Migrator.with_repo(MiniLand.Repo, fn _ -> Code.eval_file(\"./priv/repo/seeds.exs\") end)"
+bin/mini_land eval "Ecto.Migrator.with_repo(MiniLand.Repo, fn _ -> Code.eval_file(\"./priv/repo/seeds.exs\") end)"
 
 echo "==> Starting Phoenix server..."
-exec bin/seven_easy start
+exec bin/mini_land start
