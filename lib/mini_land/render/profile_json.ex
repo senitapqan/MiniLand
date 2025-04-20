@@ -7,6 +7,7 @@ defmodule MiniLand.Render.ProfileJson do
       username: user.username,
       role: user.role,
       status: user.status,
+      photo_url: user.photo_url,
       hired_date: DateTime.to_date(user.inserted_at),
       fired_date: get_fired_date(user)
     }
