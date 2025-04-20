@@ -45,6 +45,7 @@ defmodule MiniLand.Certificates do
 
   def pull_certificates do
     Repo.all(Certificate)
+    |> Enum.filter(&(&1.status == "pending"))
     |> Enum.map(&CertificateJson.render_certificate/1)
   end
 

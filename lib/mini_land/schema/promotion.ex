@@ -1,5 +1,6 @@
 defmodule MiniLand.Schema.Promotion do
   use MiniLand.Schema
+  import Ecto.Changeset
 
   schema "promotions" do
     field :name, :string
@@ -14,5 +15,11 @@ defmodule MiniLand.Schema.Promotion do
     field :status, :string, default: "active"
 
     timestamps()
+  end
+
+  def changeset(promotion, attrs) do
+    promotion
+    |> cast(attrs, [:name, :cost, :duration, :penalty, :status, :inserted_at, :updated_at])
+    |> unique_constraint(:name, name: :promotions_name_index)
   end
 end

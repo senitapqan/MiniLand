@@ -15,11 +15,14 @@ defmodule MiniLand.Promotions do
 
   def create_promotion(attrs) do
     %Promotion{}
-    |> change(attrs)
+    |> Promotion.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, promotion} ->
         {:ok, PromotionJson.render_promotion(promotion)}
+
+      {:error, %Ecto.Changeset{errors: [name: {"has already been taken", _}]}} ->
+        {:error, :duplicate_promotion}
 
       {:error, error} ->
         {:error, error}

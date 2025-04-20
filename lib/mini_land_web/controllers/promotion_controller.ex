@@ -37,6 +37,11 @@ defmodule MiniLandWeb.PromotionController do
       {:ok, data} ->
         json(conn, %{data: data})
 
+      {:error, :duplicate_promotion} ->
+        conn
+        |> put_status(409)
+        |> json(%{msg: "Promotion already exists"})
+
       {:error, :not_found} ->
         conn
         |> put_status(404)

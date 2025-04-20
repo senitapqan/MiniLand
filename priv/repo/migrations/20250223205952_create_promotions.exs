@@ -12,5 +12,7 @@ defmodule MiniLand.Repo.Migrations.CreatePromotions do
 
       timestamps()
     end
+
+    create unique_index(:promotions, [:name], name: :promotions_name_index)
   end
 end

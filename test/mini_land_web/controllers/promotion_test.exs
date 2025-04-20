@@ -83,6 +83,12 @@ defmodule MiniLandWeb.PromotionControllerTest do
       create_promotion(token)
       assert Repo.exists?(Ecto.Query.from(p in Promotion, where: p.name == "test-promotion"))
     end
+
+    test "rejects duplicate promotion", %{token: token} do
+      create_promotion(token)
+      response = create_promotion(token)
+      assert response.status == 409
+    end
   end
 
   def delete_promotion(token, promotion_id) do
